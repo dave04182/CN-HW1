@@ -6,7 +6,7 @@ import java.io.*;
 public class QuizServer {
     public static void main(String[] args) {
         ExecutorService executorService = Executors.newFixedThreadPool(10); // threads for multi client service
-        int nPort = 9999;
+        int nPort = 9999;   // port number
         ServerSocket welcomeSocket = null;
 
         try {
@@ -17,7 +17,7 @@ public class QuizServer {
                 Socket socket = welcomeSocket.accept(); // accept clients' connection
                 System.out.println("Connected!"); // if connected then prints
 
-                executorService.execute(new QuizClientHandler(socket));
+                executorService.execute(new QuizClientHandler(socket)); // excute runable class
             }
 
         } catch (IOException e) {
@@ -28,7 +28,7 @@ public class QuizServer {
 
     }
 
-    static class QuizClientHandler implements Runnable {
+    static class QuizClientHandler implements Runnable {    // shows the quiz and score
         private Socket socket;
         String[] questions = new String[] { "Where is the capital of South Korea?",
                 "What's the name of the planet that humanity lives on?", "Who established Microsoft?",
@@ -39,45 +39,47 @@ public class QuizServer {
         String[] answers = new String[] { "seoul", "earth", "bill gates", "blue whale", "france", "h2o",
                 "william shakespeare", "2", "1953", "100" }; // answers
 
-        public QuizClientHandler(Socket socket) {
+        public QuizClientHandler(Socket socket) {   // constructor
             this.socket = socket;
         }
 
         @Override
         public void run() {
             int score = 0; // show the score of client
-            BufferedReader in = null;
-            BufferedWriter out = null;
+            BufferedReader in = null;   // read from client
+            BufferedWriter out = null;  // write to client
             try {
-                in = new BufferedReader( // read from client
+                in = new BufferedReader( 
                         new InputStreamReader(socket.getInputStream()));
-                out = new BufferedWriter( // write to client
+                out = new BufferedWriter( 
                         new OutputStreamWriter(socket.getOutputStream()));
 
-                String inputMessage;
+                String inputMessage;    // get answer from client by this
 
                 while (true) {
                     out.write("Do you want to start the Quiz?(yes or no)\n");
                     out.flush();
-                    inputMessage = in.readLine();
-                    if (inputMessage.equalsIgnoreCase("no")) {
+
+                    inputMessage = in.readLine();   // get client answer whether he wants to start or not
+
+                    if (inputMessage.equalsIgnoreCase("no")) {  // if he said no, then disconnect it
                         System.out.println("Disconnected.");
                         break;
-                    } else if (inputMessage.equalsIgnoreCase("yes")) {
+                    } else if (inputMessage.equalsIgnoreCase("yes")) {  // if he said yes, then start the quiz
                         for (int i = 0; i < 10; i++) {
-                            out.write(questions[i] + "\n");
+                            out.write(questions[i] + "\n"); // show the question
                             out.flush();
-                            inputMessage = in.readLine();
+                            inputMessage = in.readLine();   // get the answer
 
-                            if (inputMessage.equalsIgnoreCase(answers[i])) {
+                            if (inputMessage.equalsIgnoreCase(answers[i])) {    // corrects then + 10 score
                                 score += 10;
                                 out.write("Correct!\n");
-                            } else {
+                            } else {                                            // incorrects then 0 score
                                 out.write("Incorrect\n");
                             }
-                            out.flush();
+                            out.flush();    // show 'Correct' or 'Incorrect'
                         }
-                        out.write("Your total score is: " + score + "\n");
+                        out.write("Your total score is: " + score + "\n");  // show the total score
                         out.flush();
                     }
                 }
